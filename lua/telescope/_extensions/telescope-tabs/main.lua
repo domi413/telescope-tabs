@@ -95,6 +95,7 @@ M.list_tabs = function(opts)
 		local window_ids = {}
 		local is_current = current_tab.number == vim.api.nvim_tabpage_get_number(tid)
 		for _, wid in ipairs(vim.api.nvim_tabpage_list_wins(tid)) do
+			-- Only consider the normal windows and ignore the floating windows
 			if vim.api.nvim_win_get_config(wid).relative == '' then
 				local bid = vim.api.nvim_win_get_buf(wid)
 				local path = vim.api.nvim_buf_get_name(bid)
@@ -129,11 +130,12 @@ M.list_tabs = function(opts)
 			sorter = conf.generic_sorter {},
 			attach_mappings = function(prompt_bufnr, map)
 				actions.select_default:replace(function()
-					actions.close(prompt_bufnr)
 					local selection = action_state.get_selected_entry()
 					if selection then
+						actions.close(prompt_bufnr)
 						vim.api.nvim_set_current_tabpage(selection.value[5])
 					end
+					vim.notify('No matching tab found', vim.log.levels.WARN)
 				end)
 				map('i', opts.close_tab_shortcut_i, close_tab)
 				map('n', opts.close_tab_shortcut_n, close_tab)
